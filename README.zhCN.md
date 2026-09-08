@@ -3,6 +3,7 @@
 用于 Adobe InDesign 的脚本，可为任意年份生成日历网格。
 本分支为俄文与中文版本：界面可选俄文或中文，日历可选「俄文 + 英文」或
 「中文 + 英文」。
+<img width="1202" height="1018" alt="Screenshot_1" src="https://github.com/user-attachments/assets/87888cc4-4e4c-4d25-9fff-8cb3e160f669" />
 
 [Русское описание → README.md](README.md)
 
