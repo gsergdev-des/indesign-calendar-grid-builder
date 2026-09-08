@@ -3,6 +3,7 @@
 Скрипт для InDesign, который строит календарную сетку на любой год.
 Эта ветка — русская и китайская: интерфейс на русском или 中文, календарь
 русско-английский или китайско-английский.
+<img width="1290" height="1015" alt="Screenshot_5" src="https://github.com/user-attachments/assets/ebcef41b-8638-43c2-96c3-610255847b36" />
 
 [中文说明 → README.zh-CN.md](README.zh-CN.md)
 
