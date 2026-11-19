@@ -14,11 +14,13 @@
      • интерфейс — українська, русский, 中文;
      • календарь — українська, русский или 中文, всегда в паре с English.
 
-   Создаёт документ, по одному месяцу на страницу. Всё оформление живёт
-   в стилях группы «CAL»: стили абзацев (кегли, шрифт, цвет), объектные
-   стили (заливки, линии, рамки), знаковые стили (красная точка,
-   иероглифы). Цвета — «CAL Red» и «CAL Fill» на панели Swatches.
-   Поменяли стиль — поменялись все 12 страниц.
+   Создаёт документ, по одному месяцу на страницу: год с января по
+   декабрь или любой диапазон от 1 до 24 месяцев с любого месяца
+   (например, «декабрь 2026 — декабрь 2027», 13 страниц).
+   Всё оформление живёт в стилях группы «CAL»: стили абзацев (кегли,
+   шрифт, цвет), объектные стили (заливки, линии, рамки), знаковые стили
+   (красная точка, иероглифы). Цвета — «CAL Red» и «CAL Fill» на панели
+   Swatches. Поменяли стиль — поменялись все страницы.
 
    Выходными считаются только суббота и воскресенье; праздники
    скрипт не отмечает.
@@ -166,6 +168,10 @@ var PRESETS = {
 /* Общее для всех компоновок */
 var COMMON = {
   year: 2027,
+  // диапазон: с какого месяца (0 = январь) и сколько страниц-месяцев.
+  // 0 и 12 — обычный календарь на год; декабрь + 13 — «с декабря по декабрь»
+  startMonth: 0,
+  monthCount: 12,
   doc: {
     pageWidth: 420, pageHeight: 594,      // A2 книжная
     marginTop: 25, marginLeft: 25, marginRight: 25, marginBottom: 25
@@ -181,6 +187,7 @@ var COMMON = {
    создания фреймов. 5486 мм и 1296 pt — максимумы самого InDesign. */
 var LIMITS = {
   year    : [1600, 3000],
+  months  : [1, 24],
   pageSide: [10, 5486],
   margin  : [0, 1000],
   ratioPct: [20, 100],
@@ -515,7 +522,8 @@ var UI = {
     cbPhoto  : "Фрейм під фото над сіткою",
 
     panelDoc : "Документ",
-    fYear    : "Рік",
+    fStart   : "Початок: місяць / рік",
+    fMonthCount: "Місяців (сторінок)",
     fFormat  : "Формат аркуша",
     fPageWH  : "Ширина / висота, мм",
     fMarTB   : "Поля: верх / низ, мм",
@@ -584,8 +592,12 @@ var UI = {
     months   : ["Січень","Лютий","Березень","Квітень","Травень","Червень",
                 "Липень","Серпень","Вересень","Жовтень","Листопад","Грудень"],
 
+    monthYear: "{0} {1}",
+    periodYear : "{0} рік",
+    periodRange: "{0} — {1}",
+
     mLine1   : "Колонка {0} мм · рядок {1} мм · числа {2} pt",
-    mLine2   : "Найнижча точка за 12 місяців: {0} з {1} мм",
+    mLine2   : "Найнижча точка серед усіх місяців: {0} з {1} мм",
     mErr     : "Помилка: ",
     mWarn    : "Увага: ",
 
@@ -620,7 +632,7 @@ var UI = {
     buildFailHead : "Не вдалося побудувати календар:",
     lineWord      : "рядок",
     undo          : "Календарна сітка {0}",
-    doneBody      : "Календар на {0} рік створено: 12 сторінок {1} × {2} мм." +
+    doneBody      : "Календар на {0} створено: {5} стор., {1} × {2} мм." +
                     "\nДизайн: {3}\nКомпонування: {4}\n\nУсе оформлення — у " +
                     "групах «CAL»: стилі абзаців, об'єктні й символьні стилі." +
                     "\nКольори — «CAL Red» і «CAL Fill» на панелі Swatches.",
@@ -703,7 +715,8 @@ var UI = {
     cbPhoto  : "Фрейм под фото над сеткой",
 
     panelDoc : "Документ",
-    fYear    : "Год",
+    fStart   : "Начало: месяц / год",
+    fMonthCount: "Месяцев (страниц)",
     fFormat  : "Формат листа",
     fPageWH  : "Ширина / высота, мм",
     fMarTB   : "Поля: верх / низ, мм",
@@ -773,7 +786,10 @@ var UI = {
                 "Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
 
     mLine1   : "Колонка {0} мм · строка {1} мм · числа {2} pt",
-    mLine2   : "Самая нижняя точка за 12 месяцев: {0} из {1} мм",
+    mLine2   : "Самая нижняя точка среди всех месяцев: {0} из {1} мм",
+    monthYear: "{0} {1}",
+    periodYear : "{0} год",
+    periodRange: "{0} — {1}",
     mErr     : "Ошибка: ",
     mWarn    : "Внимание: ",
 
@@ -808,7 +824,7 @@ var UI = {
     buildFailHead : "Не удалось построить календарь:",
     lineWord      : "строка",
     undo          : "Календарная сетка {0}",
-    doneBody      : "Календарь на {0} год создан: 12 страниц {1} × {2} мм." +
+    doneBody      : "Календарь на {0} создан: {5} стр., {1} × {2} мм." +
                     "\nДизайн: {3}\nКомпоновка: {4}\n\nВсё оформление — в " +
                     "группах «CAL»: стили абзацев, объектные и знаковые стили." +
                     "\nЦвета — «CAL Red» и «CAL Fill» на панели Swatches.",
@@ -892,7 +908,8 @@ var UI = {
     cbPhoto  : "在网格上方放置图片框",
 
     panelDoc : "文档",
-    fYear    : "年份",
+    fStart   : "起始：月份 / 年份",
+    fMonthCount: "月数（页数）",
     fFormat  : "页面尺寸",
     fPageWH  : "宽 / 高，毫米",
     fMarTB   : "页边距：上 / 下",
@@ -960,7 +977,10 @@ var UI = {
                 "七月","八月","九月","十月","十一月","十二月"],
 
     mLine1   : "列宽 {0} 毫米 · 行高 {1} 毫米 · 日期 {2} pt",
-    mLine2   : "全年最低点：{0} / {1} 毫米",
+    mLine2   : "所有月份最低点：{0} / {1} 毫米",
+    monthYear: "{1} 年{0}",
+    periodYear : "{0} 年",
+    periodRange: "{0}至 {1}",
     mErr     : "错误：",
     mWarn    : "注意：",
 
@@ -989,7 +1009,7 @@ var UI = {
     buildFailHead : "无法生成日历：",
     lineWord      : "行",
     undo          : "日历网格 {0}",
-    doneBody      : "{0} 年日历已生成：12 页，{1} × {2} 毫米。\n设计：{3}\n" +
+    doneBody      : "{0}日历已生成：{5} 页，{1} × {2} 毫米。\n设计：{3}\n" +
                     "版式：{4}\n\n全部外观都在 CAL 样式组中：段落样式、" +
                     "对象样式和字符样式。\n颜色为色板中的 CAL Red 和 CAL Fill。",
     doneCjkNote   : "\n汉字使用 CAL 样式组中的 CJK 字符样式。"
@@ -1044,6 +1064,8 @@ function factoryState(tpl, design) {
     uiLang  : lang,
     calLang : lang,
     year    : COMMON.year,
+    startMonth: COMMON.startMonth,
+    monthCount: COMMON.monthCount,
     doc     : clone(COMMON.doc),
     font    : clone(COMMON.font),
     colors  : clone(COMMON.colors),
@@ -1126,6 +1148,16 @@ function loadPrefs() {
   if (!UI[state.uiLang])   state.uiLang  = "ua";
   if (!CAL[state.calLang]) state.calLang = "ua";
   if (indexOf(ENUMS.miniSide, state.options.miniSide) < 0) state.options.miniSide = "right";
+  // диапазон идёт индексом в таблицы месяцев — только целые и в границах
+  state.startMonth = clampInt(state.startMonth, 0, 11);
+  state.monthCount = clampInt(state.monthCount, LIMITS.months[0], LIMITS.months[1]);
+  state.year       = clampInt(state.year, LIMITS.year[0], LIMITS.year[1]);
+}
+
+function clampInt(v, lo, hi) {
+  v = Math.round(v);
+  if (isNaN(v)) return lo;
+  return Math.max(lo, Math.min(hi, v));
 }
 
 /* =====================================================================
@@ -1178,6 +1210,53 @@ function monthMatrix(y, m, forceSix) {
   }
   MATRIX_CACHE[key] = rows;                  // только читается, не мутируется
   return rows;
+}
+
+/* Месяцы, которые войдут в документ, по порядку страниц. У каждого свой
+   год: диапазон «декабрь 2026 + 13» переходит через Новый год. */
+function monthRange() {
+  var list = [], i, m;
+  for (i = 0; i < state.monthCount; i++) {
+    m = state.startMonth + i;
+    list.push({ year: state.year + Math.floor(m / 12), month: m % 12 });
+  }
+  return list;
+}
+
+function isWholeYear() { return state.startMonth === 0 && state.monthCount === 12; }
+
+/* «Май 2027» / «2027 年五月» — для подписей и предупреждений */
+function monthLabel(U, e, lower) {
+  var name = U.months[e.month];
+  return fmt(U.monthYear, lower ? name.toLowerCase() : name, e.year);
+}
+
+/* Период для итогового сообщения: «2027 год» или «декабрь 2026 — декабрь 2027» */
+function periodText(U) {
+  var list = monthRange(), a = list[0], b = list[list.length - 1];
+  if (isWholeYear())    return fmt(U.periodYear, a.year);
+  if (list.length === 1) return monthLabel(U, a, true);
+  return fmt(U.periodRange, monthLabel(U, a, true), monthLabel(U, b, true));
+}
+
+/* Короткий период без слов — для названия шага отмены */
+function periodShort() {
+  var list = monthRange(), a = list[0], b = list[list.length - 1];
+  function mm(e) { return (e.month < 9 ? "0" : "") + (e.month + 1) + "." + e.year; }
+  if (isWholeYear())    return String(a.year);
+  if (list.length === 1) return mm(a);
+  return mm(a) + "–" + mm(b);
+}
+
+/* Месяц с наибольшим числом строк — худший случай по высоте, его схема
+   показывает первым */
+function tallestMonth(list) {
+  var best = 0, rows = 0, i, n;
+  for (i = 0; i < list.length; i++) {
+    n = monthMatrix(list[i].year, list[i].month, false).length;
+    if (n > rows) { rows = n; best = i; }
+  }
+  return best;
 }
 
 function pt2mm(v) { return v * 25.4 / 72; }
@@ -1373,13 +1452,17 @@ function computeMonth(year, month) {
 /* Ширина колонки дня — для подписи под схемой и автоподбора */
 function columnWidth() { return computeMonth(state.year, 0).colW; }
 
-/* Самая нижняя точка блока за все 12 месяцев + сопутствующие наблюдения */
+/* Самая нижняя точка блока по всем месяцам диапазона + сопутствующие
+   наблюдения. Месяцы в ответе — записи { year, month } из monthRange(). */
 function worstBottom() {
-  var r = { y: 0, month: 0, overhang: 0, overMonth: 0, aboveTop: -1, top: 1e9 };
-  var m, i, g, b, ov, t;
+  var list = monthRange();
+  var r = { y: 0, month: list[0], overhang: 0, overMonth: list[0],
+            aboveTop: null, top: 1e9 };
+  var k, e, i, g, b, ov, t;
 
-  for (m = 0; m < 12; m++) {
-    g = computeMonth(state.year, m);
+  for (k = 0; k < list.length; k++) {
+    e = list[k];
+    g = computeMonth(e.year, e.month);
     b = g.blockBottom;
     t = g.titleY;
 
@@ -1388,13 +1471,13 @@ function worstBottom() {
       t = Math.min(t, g.minis[i].y);
       if (state.template !== "below") {
         ov = (g.minis[i].y + g.minis[i].h) - g.gridBottom;
-        if (ov > r.overhang) { r.overhang = ov; r.overMonth = m; }
+        if (ov > r.overhang) { r.overhang = ov; r.overMonth = e; }
       }
     }
     if (g.panel) { b = Math.max(b, g.panel[3]); t = Math.min(t, g.panel[1]); }
-    if (b > r.y) { r.y = b; r.month = m; }
+    if (b > r.y) { r.y = b; r.month = e; }
     if (t < r.top) r.top = t;
-    if (r.aboveTop < 0 && t < state.doc.marginTop) r.aboveTop = m;
+    if (!r.aboveTop && t < state.doc.marginTop) r.aboveTop = e;
   }
   return r;
 }
@@ -1412,8 +1495,8 @@ function contentHeight() {
   return h;
 }
 
-/* Низ фрейма под фото: выше самого высокого блока за год — чтобы
-   фото на всех 12 страницах были одного размера. */
+/* Низ фрейма под фото: выше самого высокого блока диапазона — чтобы
+   фото на всех страницах были одного размера. */
 function photoBottom() {
   return worstBottom().top - state.layout.photoGap;
 }
@@ -1870,7 +1953,7 @@ function monthScene(year, month, photoY) {
    ===================================================================== */
 
 /* precomputed — уже посчитанный worstBottom(): позволяет не проходить
-   12 месяцев дважды за одно обновление. */
+   все месяцы дважды за одно обновление. */
 function validate(precomputed) {
   var D = state.doc, L = state.layout, O = state.options;
   var U = UI[state.uiLang];
@@ -1909,14 +1992,14 @@ function validate(precomputed) {
   var limit = D.pageHeight - D.marginBottom;
 
   if (w.y > limit + 0.2) {          // 0.2 мм — погрешность округления, не повод
-    res.warnings.push(fmt(U.warnBelow, (w.y - limit).toFixed(1), U.months[w.month]));
+    res.warnings.push(fmt(U.warnBelow, (w.y - limit).toFixed(1), monthLabel(U, w.month)));
   }
-  if (w.aboveTop >= 0) {
-    res.warnings.push(fmt(U.warnAbove, U.months[w.aboveTop]));
+  if (w.aboveTop) {
+    res.warnings.push(fmt(U.warnAbove, monthLabel(U, w.aboveTop)));
   }
   if (w.overhang > 10) {
     res.warnings.push(fmt(U.warnOverhang, w.overhang.toFixed(1),
-                          U.months[w.overMonth]));
+                          monthLabel(U, w.overMonth)));
   }
 
   // шрифт с иероглифами — предупреждение, а не ошибка: документ построится
@@ -2389,7 +2472,8 @@ function beginRender(doc) {
 var LAST_DOC = null;
 
 function build(opts) {
-  var D = state.doc, U = UI[state.uiLang], doc = null, m, pY;
+  var D = state.doc, U = UI[state.uiLang], doc = null, k, pY;
+  var list = monthRange();
   var hidden = opts && opts.hidden;
   var redraw = true;
   try { redraw = app.scriptPreferences.enableRedraw; } catch (e) {}
@@ -2418,11 +2502,12 @@ function build(opts) {
       right: D.marginRight, bottom: D.marginBottom, columnCount: 1
     };
 
-    dp.pagesPerDocument = 12;
+    dp.pagesPerDocument = list.length;
 
     beginRender(doc);
     pY = state.options.photoFrame ? photoBottom() : undefined;
-    for (m = 0; m < 12; m++) renderScene(doc.pages[m], monthScene(state.year, m, pY));
+    for (k = 0; k < list.length; k++)
+      renderScene(doc.pages[k], monthScene(list[k].year, list[k].month, pY));
 
     if (!hidden) {
       try {
@@ -2619,7 +2704,8 @@ function previewItalic(bold) {
   return /italic|oblique|kursiv/i.test(s || "");
 }
 
-function drawPreview(gfx, W, H, monthIdx, zoom) {
+/* entry — { year, month } из monthRange() */
+function drawPreview(gfx, W, H, entry, zoom) {
   var cv = new PreviewCanvas(gfx), g = gfx;
   var D = state.doc;
 
@@ -2630,9 +2716,9 @@ function drawPreview(gfx, W, H, monthIdx, zoom) {
   if (!(pw > 0 && ph > 0)) return;
 
   var pY    = state.options.photoFrame ? photoBottom() : undefined;
-  var items = monthScene(state.year, monthIdx, pY);
+  var items = monthScene(entry.year, entry.month, pY);
   var specs = paraSpecs();
-  var osp   = objSpecs(computeMonth(state.year, monthIdx));
+  var osp   = objSpecs(computeMonth(entry.year, entry.month));
   var i, it, vx1, vy1, vx2, vy2, b;
 
   // область просмотра: весь лист или блок календаря крупно
@@ -3008,7 +3094,12 @@ function showDialog() {
   var cbMiniAdj = pT.add("checkbox", undefined, U.cbMiniAdj);
 
   var pD = panelIn(lA, U.panelDoc);
-  var eYear = field(pD, U.fYear, 70);
+  var gStart  = row(pD, U.fStart);
+  var ddStart = gStart.add("dropdownlist", undefined, U.months);
+  ddStart.preferredSize.width = 100;
+  var eYear   = gStart.add("edittext", undefined, "");
+  eYear.preferredSize.width = 52;
+  var eCount  = field(pD, U.fMonthCount, 52);
   var ddFmt = dropdown(pD, U.fFormat, U.pagePresets, 160);
   var ePage = fieldPair(pD, U.fPageWH, "×");
   var eMar1 = fieldPair(pD, U.fMarTB, "/");
@@ -3092,7 +3183,8 @@ function showDialog() {
   var gPrevTop = pPrev.add("group");
   gPrevTop.orientation = "row"; gPrevTop.spacing = 8;
   gPrevTop.add("statictext", undefined, U.fPrevMonth);
-  var ddPrevMonth = gPrevTop.add("dropdownlist", undefined, U.months);
+  // пункты — месяцы диапазона, их заполняет fillPrevMonths()
+  var ddPrevMonth = gPrevTop.add("dropdownlist", undefined, []);
   ddPrevMonth.preferredSize.width = 130;
   var rbPage  = gPrevTop.add("radiobutton", undefined, U.zoomPage);
   var rbBlock = gPrevTop.add("radiobutton", undefined, U.zoomBlock);
@@ -3153,7 +3245,8 @@ function showDialog() {
   function syncNumericFields() {
     var L = state.layout, D = state.doc, Col = state.colors, S = state.style;
 
-    eYear.text = state.year;
+    eYear.text  = state.year;
+    eCount.text = state.monthCount;
     ePage[0].text = D.pageWidth;  ePage[1].text = D.pageHeight;
     eMar1[0].text = D.marginTop;  eMar1[1].text = D.marginBottom;
     eMar2[0].text = D.marginLeft; eMar2[1].text = D.marginRight;
@@ -3214,6 +3307,7 @@ function showDialog() {
     ddLangCal.selection = Math.max(0, indexOf(LANGS, state.calLang));
 
     radios[state.template].value = true;
+    ddStart.selection = state.startMonth;
     fillStyleControls();
     syncNumericFields();
 
@@ -3244,8 +3338,7 @@ function showDialog() {
       else { ddCjkReg.removeAll(); ddCjkBold.removeAll(); }
     }
 
-    // май 2027 — шестистрочный месяц, худший случай по высоте
-    if (!ddPrevMonth.selection) ddPrevMonth.selection = 4;
+    fillPrevMonths();
     rbBlock.value = (state.view.zoom !== "page");
     rbPage.value  = !rbBlock.value;
 
@@ -3289,7 +3382,9 @@ function showDialog() {
     var L = state.layout, D = state.doc, O = state.options, Col = state.colors;
     var S = state.style, F = state.font, sc;
 
-    state.year = Math.round(numOf(eYear, state.year, LIMITS.year));
+    state.year       = Math.round(numOf(eYear,  state.year,       LIMITS.year));
+    state.monthCount = Math.round(numOf(eCount, state.monthCount, LIMITS.months));
+    if (ddStart.selection) state.startMonth = ddStart.selection.index;
 
     D.pageWidth    = numOf(ePage[0], D.pageWidth,    LIMITS.pageSide);
     D.pageHeight   = numOf(ePage[1], D.pageHeight,   LIMITS.pageSide);
@@ -3385,8 +3480,32 @@ function showDialog() {
     filling = true;
     syncNumericFields();
     updateEnabled();
+    fillPrevMonths();
     filling = false;
     redrawPreview();
+  }
+
+  /* Список месяцев над схемой = месяцы диапазона. Перестраивается только
+     при смене диапазона; выбранный месяц сохраняется, если он остался в
+     диапазоне, иначе берётся самый высокий — худший случай по высоте. */
+  var prevList = [], prevKey = "";
+
+  function fillPrevMonths() {
+    var key = state.year + "/" + state.startMonth + "/" + state.monthCount;
+    if (key === prevKey) return;
+
+    var old = (ddPrevMonth.selection) ? prevList[ddPrevMonth.selection.index] : null;
+    var i, sel = -1;
+    prevKey  = key;
+    prevList = monthRange();
+
+    ddPrevMonth.removeAll();
+    for (i = 0; i < prevList.length; i++) {
+      ddPrevMonth.add("item", monthLabel(U, prevList[i]));
+      if (old && sel < 0 && prevList[i].year === old.year &&
+          prevList[i].month === old.month) sel = i;
+    }
+    ddPrevMonth.selection = (sel >= 0) ? sel : tallestMonth(prevList);
   }
 
   function applyAutofit() {
@@ -3440,9 +3559,11 @@ function showDialog() {
 
   prev.onDraw = function () {
     drawCount++;
-    var mIdx = (ddPrevMonth && ddPrevMonth.selection) ? ddPrevMonth.selection.index : 4;
+    var sel   = ddPrevMonth.selection;
+    var entry = (sel && prevList[sel.index]) || prevList[0];
+    if (!entry) return;
     try {
-      drawPreview(this.graphics, this.size.width, this.size.height, mIdx,
+      drawPreview(this.graphics, this.size.width, this.size.height, entry,
                   state.view.zoom);
     } catch (e) {}
   };
@@ -3498,6 +3619,7 @@ function showDialog() {
         state.style  = keep.style;     state.doc    = keep.doc;
         state.font   = keep.font;      state.colors = keep.colors;
         state.year   = keep.year;      state.view   = keep.view;
+        state.startMonth = keep.startMonth; state.monthCount = keep.monthCount;
         state.uiLang = keep.uiLang;    state.calLang = keep.calLang;
         state.options.miniSide   = keep.options.miniSide;
         state.options.photoFrame = keep.options.photoFrame;
@@ -3557,12 +3679,13 @@ function showDialog() {
     };
   }
 
-  ddAnc.onChange = refresh;
-  cbMini.onClick = refresh;
+  ddAnc.onChange   = refresh;
+  ddStart.onChange = refresh;
+  cbMini.onClick   = refresh;
   bAuto.onClick  = applyAutofit;
 
   var live = [ePage[0], ePage[1], eMar1[0], eMar1[1], eMar2[0], eMar2[1],
-              eYear, eRatio, eTop, eGapMM,
+              eYear, eCount, eRatio, eTop, eGapMM,
               eTitle, eDay, eCellH, eHeadLc, eHeadEn, eWeekNo,
               eMTitle, eMDay, eMCellH, eMHead, eMGap, eMW,
               eRed[0], eRed[1], eRed[2], eRed[3],
@@ -3578,6 +3701,7 @@ function showDialog() {
     state.font   = keep.font;      state.colors = keep.colors;    // цвет и дизайн —
     state.year   = keep.year;      state.view   = keep.view;      // не часть
     state.uiLang = keep.uiLang;    state.calLang = keep.calLang;  // компоновки
+    state.startMonth = keep.startMonth; state.monthCount = keep.monthCount;
     state.options.miniSide   = keep.options.miniSide;
     state.options.photoFrame = keep.options.photoFrame;
     if (keep.doc.pageWidth !== BASE.pageW || keep.doc.pageHeight !== BASE.pageH)
@@ -3624,6 +3748,7 @@ function showDialog() {
     try {
       $.global.CGB_HARNESS.onDialog(win, {
         tabs: tabs, tabList: [tD, tL, tF, tC], design: ddDesign, month: ddPrevMonth,
+        start: ddStart, year: eYear, count: eCount,
         rbPage: rbPage, rbBlock: rbBlock, applyDesign: applyDesign,
         redraw: redrawPreview
       });
@@ -3655,6 +3780,11 @@ if ($.global.CGB_HARNESS) {
     lastDoc     : function () { return LAST_DOC; },
     monthScene  : monthScene,
     computeMonth: computeMonth,
+    monthRange  : monthRange,
+    worstBottom : worstBottom,
+    periodText  : periodText,
+    periodShort : periodShort,
+    ui          : UI,
     showDialog  : function () { return (typeof showDialog === "function") ? showDialog() : "n/a"; },
     designs     : DESIGN_ORDER,
     templates   : TEMPLATES
@@ -3676,13 +3806,13 @@ if (answer === "ok") {
 
   app.doScript(function () { buildError = build(); },
                ScriptLanguage.JAVASCRIPT, undefined,
-               UndoModes.ENTIRE_SCRIPT, fmt(U.undo, state.year));
+               UndoModes.ENTIRE_SCRIPT, fmt(U.undo, periodShort()));
 
   if (buildError) {
     alert(U.buildFailHead + NL + NL + buildError, U.buildFailTitle);
   } else {
-    alert(fmt(U.doneBody, state.year, state.doc.pageWidth, state.doc.pageHeight,
-              U.designs[state.design], U.tpl[state.template]) +
+    alert(fmt(U.doneBody, periodText(U), state.doc.pageWidth, state.doc.pageHeight,
+              U.designs[state.design], U.tpl[state.template], state.monthCount) +
           (state.calLang === "zh" ? U.doneCjkNote : ""));
   }
 }
