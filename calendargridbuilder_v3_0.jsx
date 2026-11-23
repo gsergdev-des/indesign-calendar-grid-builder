@@ -16,7 +16,8 @@
 
    Создаёт документ, по одному месяцу на страницу: год с января по
    декабрь или любой диапазон от 1 до 24 месяцев с любого месяца
-   (например, «декабрь 2026 — декабрь 2027», 13 страниц).
+   (например, «декабрь 2026 — декабрь 2027», 13 страниц). Последней
+   страницей по желанию идёт следующий год целиком — 12 месяцев сеткой.
    Всё оформление живёт в стилях группы «CAL»: стили абзацев (кегли,
    шрифт, цвет), объектные стили (заливки, линии, рамки), знаковые стили
    (красная точка, иероглифы). Цвета — «CAL Red» и «CAL Fill» на панели
@@ -172,6 +173,9 @@ var COMMON = {
   // 0 и 12 — обычный календарь на год; декабрь + 13 — «с декабря по декабрь»
   startMonth: 0,
   monthCount: 12,
+  // последняя страница — следующий год целиком; 0 = год подставляется сам
+  yearPage: true,
+  yearPageYear: 0,
   doc: {
     pageWidth: 420, pageHeight: 594,      // A2 книжная
     marginTop: 25, marginLeft: 25, marginRight: 25, marginBottom: 25
@@ -524,6 +528,14 @@ var UI = {
     panelDoc : "Документ",
     fStart   : "Початок: місяць / рік",
     fMonthCount: "Місяців (сторінок)",
+    cbYearPage : "Остання сторінка — рік цілком",
+    cbYearPageTip: "Дванадцять місяців наступного року на одній сторінці в кінці " +
+                   "документа. Рік підставляється сам — той, що йде за календарем; " +
+                   "можна вписати свій.",
+    prevYearPage : "{0} — рік цілком",
+    warnYearSmall: "На сторінці року числа лише {0} pt — для друку це дрібно. " +
+                   "Допоможе більший аркуш або вужчі поля.",
+    doneYearPage : "\nОстання сторінка — {0} рік цілком.",
     fFormat  : "Формат аркуша",
     fPageWH  : "Ширина / висота, мм",
     fMarTB   : "Поля: верх / низ, мм",
@@ -632,7 +644,7 @@ var UI = {
     buildFailHead : "Не вдалося побудувати календар:",
     lineWord      : "рядок",
     undo          : "Календарна сітка {0}",
-    doneBody      : "Календар на {0} створено: {5} стор., {1} × {2} мм." +
+    doneBody      : "Календар на {0} створено: {5} стор., {1} × {2} мм.{6}" +
                     "\nДизайн: {3}\nКомпонування: {4}\n\nУсе оформлення — у " +
                     "групах «CAL»: стилі абзаців, об'єктні й символьні стилі." +
                     "\nКольори — «CAL Red» і «CAL Fill» на панелі Swatches.",
@@ -717,6 +729,14 @@ var UI = {
     panelDoc : "Документ",
     fStart   : "Начало: месяц / год",
     fMonthCount: "Месяцев (страниц)",
+    cbYearPage : "Последняя страница — год целиком",
+    cbYearPageTip: "Двенадцать месяцев следующего года на одной странице в конце " +
+                   "документа. Год подставляется сам — тот, что идёт за календарём; " +
+                   "можно вписать свой.",
+    prevYearPage : "{0} — год целиком",
+    warnYearSmall: "На странице года числа всего {0} pt — для печати мелко. " +
+                   "Поможет лист побольше или поля поуже.",
+    doneYearPage : "\nПоследняя страница — {0} год целиком.",
     fFormat  : "Формат листа",
     fPageWH  : "Ширина / высота, мм",
     fMarTB   : "Поля: верх / низ, мм",
@@ -824,7 +844,7 @@ var UI = {
     buildFailHead : "Не удалось построить календарь:",
     lineWord      : "строка",
     undo          : "Календарная сетка {0}",
-    doneBody      : "Календарь на {0} создан: {5} стр., {1} × {2} мм." +
+    doneBody      : "Календарь на {0} создан: {5} стр., {1} × {2} мм.{6}" +
                     "\nДизайн: {3}\nКомпоновка: {4}\n\nВсё оформление — в " +
                     "группах «CAL»: стили абзацев, объектные и знаковые стили." +
                     "\nЦвета — «CAL Red» и «CAL Fill» на панели Swatches.",
@@ -910,6 +930,12 @@ var UI = {
     panelDoc : "文档",
     fStart   : "起始：月份 / 年份",
     fMonthCount: "月数（页数）",
+    cbYearPage : "末页：全年日历",
+    cbYearPageTip: "在文档末尾用一页排出下一年的十二个月。年份自动取日历之后的" +
+                   "那一年，也可以自行填写。",
+    prevYearPage : "{0} 年全年",
+    warnYearSmall: "全年页上的日期只有 {0} pt，印刷时偏小。可以换更大的页面或减小页边距。",
+    doneYearPage : "\n末页：{0} 年全年日历。",
     fFormat  : "页面尺寸",
     fPageWH  : "宽 / 高，毫米",
     fMarTB   : "页边距：上 / 下",
@@ -1009,7 +1035,7 @@ var UI = {
     buildFailHead : "无法生成日历：",
     lineWord      : "行",
     undo          : "日历网格 {0}",
-    doneBody      : "{0}日历已生成：{5} 页，{1} × {2} 毫米。\n设计：{3}\n" +
+    doneBody      : "{0}日历已生成：{5} 页，{1} × {2} 毫米。{6}\n设计：{3}\n" +
                     "版式：{4}\n\n全部外观都在 CAL 样式组中：段落样式、" +
                     "对象样式和字符样式。\n颜色为色板中的 CAL Red 和 CAL Fill。",
     doneCjkNote   : "\n汉字使用 CAL 样式组中的 CJK 字符样式。"
@@ -1066,6 +1092,8 @@ function factoryState(tpl, design) {
     year    : COMMON.year,
     startMonth: COMMON.startMonth,
     monthCount: COMMON.monthCount,
+    yearPage  : COMMON.yearPage,
+    yearPageYear: COMMON.yearPageYear,
     doc     : clone(COMMON.doc),
     font    : clone(COMMON.font),
     colors  : clone(COMMON.colors),
@@ -1152,6 +1180,8 @@ function loadPrefs() {
   state.startMonth = clampInt(state.startMonth, 0, 11);
   state.monthCount = clampInt(state.monthCount, LIMITS.months[0], LIMITS.months[1]);
   state.year       = clampInt(state.year, LIMITS.year[0], LIMITS.year[1]);
+  if (state.yearPageYear !== 0)
+    state.yearPageYear = clampInt(state.yearPageYear, LIMITS.year[0], LIMITS.year[1]);
 }
 
 function clampInt(v, lo, hi) {
@@ -1247,6 +1277,22 @@ function periodShort() {
   if (list.length === 1) return mm(a);
   return mm(a) + "–" + mm(b);
 }
+
+/* Год для страницы «год целиком», если его не вписали вручную: год
+   месяца, который идёт сразу за последней страницей. Для календаря на
+   2027 это 2028, для «декабрь 2026 + 13» — тоже 2028, для «июль 2027 —
+   июнь 2028» — 2028: год, который продолжается после календаря. */
+function autoYearPageYear() {
+  var list = monthRange(), last = list[list.length - 1];
+  return last.year + (last.month === 11 ? 1 : 0);
+}
+
+function yearPageYear() {
+  return (state.yearPageYear > 0) ? state.yearPageYear : autoYearPageYear();
+}
+
+/* Страниц в документе: месяцы плюс, если включена, страница года */
+function pageCount() { return state.monthCount + (state.yearPage ? 1 : 0); }
 
 /* Месяц с наибольшим числом строк — худший случай по высоте, его схема
    показывает первым */
@@ -1566,6 +1612,85 @@ function clampLayout() {
   if (L.miniW < LIMITS.miniW[0])     L.miniW = LIMITS.miniW[0];
 }
 
+/* Страница «год целиком»: крупный год сверху и двенадцать месяцев сеткой.
+   Всё меряется в u — ширине колонки дня; u подбирается под лист так,
+   чтобы месяцы вышли как можно крупнее. Кегли получаются из u, поэтому
+   страница сама подстраивается под A2, A4 и альбомную ориентацию. */
+var YP = {
+  title   : 2.2,   // кегль года = кегль названия месяца × 2.2
+  titleGap: 0.45,  // зазор под годом — доля высоты строки года
+  month   : 0.44,  // кегль названия месяца, доля u (в мм)
+  monthGap: 0.22,
+  head    : 0.27,  // буквы дней недели
+  day     : 0.40,  // числа
+  week    : 0.26,  // номера недель
+  cellMin : 0.62,  // высота строки: не ниже…
+  cellMax : 0.95,  // …и не выше, остаток высоты уходит в зазоры
+  wkW     : 0.80,  // колонка номеров недель
+  wkGap   : 0.25,
+  gutX    : 1.2,  gutXMax: 3.0,   // зазоры между месяцами
+  gutY    : 1.1,  gutYMax: 2.2,
+  pad     : 0.35   // поле плашки вокруг месяца (дизайны с плашкой под мини)
+};
+
+function yearGeom() {
+  var D = state.doc, L = state.layout, S = state.style;
+  var x0 = D.marginLeft, y0 = D.marginTop;
+  var w  = Math.max(10, D.pageWidth  - D.marginLeft - D.marginRight);
+  var h  = Math.max(10, D.pageHeight - D.marginTop  - D.marginBottom);
+
+  var titlePt = Math.max(1, Math.min(LIMITS.fontSize[1], L.titleSize * YP.title));
+  var th = pt2mm(titlePt) * FRAME.title;
+  var gy = y0 + th * (1 + YP.titleGap);
+  var gh = Math.max(5, y0 + h - gy);
+
+  var wkU  = (S.weekNo !== "none") ? YP.wkW + YP.wkGap : 0;
+  var padU = S.miniPanel ? YP.pad : 0;
+  var fixU = YP.month * FRAME.miniTitle + YP.monthGap + 2 * YP.head * FRAME.miniHead;
+
+  // раскладка 2×6, 3×4, 4×3 или 6×2 — какая даст месяцы крупнее
+  var opts = [2, 3, 4, 6], best = null, i, cols, rows, uw, uh, u;
+  for (i = 0; i < opts.length; i++) {
+    cols = opts[i]; rows = 12 / cols;
+    uw = w  / (cols * (7 + wkU) + (cols - 1) * YP.gutX + 2 * padU);
+    uh = gh / (rows * (fixU + 6 * YP.cellMin) + (rows - 1) * YP.gutY + 2 * padU);
+    u  = Math.min(uw, uh);
+    if (!best || u > best.u + 1e-9) best = { cols: cols, rows: rows, u: u };
+  }
+  u = best.u; cols = best.cols; rows = best.rows;
+
+  var pad = padU * u, bw = (7 + wkU) * u, fix = fixU * u;
+  var availH = gh - 2 * pad;
+
+  // строки растягиваются по высоте, но в разумных пределах
+  var cellH = (availH - (rows - 1) * YP.gutY * u - rows * fix) / (rows * 6);
+  cellH = Math.max(YP.cellMin * u, Math.min(YP.cellMax * u, cellH));
+  var bh = fix + 6 * cellH;
+
+  var gapY = (rows > 1) ? (availH - rows * bh) / (rows - 1) : 0;
+  gapY = Math.max(YP.gutY * u, Math.min(YP.gutYMax * u, gapY));
+  var gapX = (cols > 1) ? (w - 2 * pad - cols * bw) / (cols - 1) : 0;
+  gapX = Math.max(YP.gutX * u, Math.min(YP.gutXMax * u, gapX));
+
+  var gridW = cols * bw + (cols - 1) * gapX;
+  var gridH = rows * bh + (rows - 1) * gapY;
+
+  function pt(k) { return Math.max(1, Math.round(k * u / pt2mm(1) * 10) / 10); }
+
+  return {
+    titleB: [x0, y0, x0 + w, y0 + th], titlePt: titlePt,
+    cols: cols, rows: rows, u: u, bw: bw, bh: bh, cellH: cellH,
+    gapX: gapX, gapY: gapY, pad: pad,
+    // левый верхний угол сетки вместе с полями плашек; сетка по центру
+    left: x0 + (w  - gridW - 2 * pad) / 2,
+    top : gy + (gh - gridH - 2 * pad) / 2,
+    wkW : wkU ? YP.wkW * u : 0, wkGap: wkU ? YP.wkGap * u : 0,
+    monthPt: pt(YP.month), headPt: pt(YP.head), dayPt: pt(YP.day), weekPt: pt(YP.week),
+    monthH: YP.month * u * FRAME.miniTitle, monthGap: YP.monthGap * u,
+    headH : YP.head  * u * FRAME.miniHead
+  };
+}
+
 /* =====================================================================
    8. СЦЕНА — ЧТО И ГДЕ РИСОВАТЬ
 
@@ -1637,12 +1762,29 @@ function paraSpecs() {
   add("miniDayAdjRed", "Mini day adjacent red", { size: L.miniDaySize, align: "R", color: "red",
                                                   tint: C.redTint });
   add("miniWeekNo",    "Mini week no",          { size: L.miniWeekNoSize, align: "R", color: "red" });
+
+  // страница «год целиком»: кегли считает yearGeom() по формату листа
+  var G = yearGeom();
+  add("ypTitle",  "Year page",        { size: G.titlePt, bold: true, align: "L", color: yr.color,
+                                        outline: yr.outline, tint: yr.tint });
+  add("ypTitleC", "Year page center", { size: G.titlePt, bold: true, align: "C", color: yr.color,
+                                        outline: yr.outline, tint: yr.tint });
+  add("ypMonth",     "Year page month",       { size: G.monthPt, bold: true, align: "L", caps: S.caps });
+  add("ypHead",      "Year page weekday",     { size: G.headPt, align: "R" });
+  add("ypHeadRed",   "Year page weekday red", { size: G.headPt, align: "R", color: "red" });
+  add("ypDay",       "Year page day",         { size: G.dayPt, align: "R", tint: S.dayTint });
+  add("ypDayRed",    "Year page day red",     { size: G.dayPt, align: "R", color: "red" });
+  add("ypDayAdj",    "Year page day adjacent",     { size: G.dayPt, align: "R", tint: C.grey });
+  add("ypDayAdjRed", "Year page day adjacent red", { size: G.dayPt, align: "R", color: "red",
+                                                     tint: C.redTint });
+  add("ypWeekNo",    "Year page week no",     { size: G.weekPt, align: "R", tint: C.grey });
   return sp;
 }
 
 /* Названия и заголовки — жирным; им же нужен жирный стиль иероглифов */
 var BOLD_KEYS = { title: true, titleC: true, titleR: true,
-                  year: true, yearC: true, yearR: true };
+                  year: true, yearC: true, yearR: true,
+                  ypTitle: true, ypTitleC: true, ypMonth: true };
 
 function boxGap(g) { return Math.min(g.colW, state.layout.cellH) * K.boxGap; }
 
@@ -1812,52 +1954,104 @@ function titleScene(out, g, year, month) {
   }
 }
 
-function miniScene(out, mn) {
-  var L = state.layout, S = state.style, CL = CAL[state.calLang];
+/* Ключи стилей абзацев мини-календаря: на странице месяца и на странице
+   года одна и та же разметка, но свои стили — у них разные кегли. */
+var MINI_KEYS = { title: "miniTitle", head: "miniHead", headRed: "miniHeadRed",
+                  day: "miniDay", dayRed: "miniDayRed",
+                  adj: "miniDayAdj", adjRed: "miniDayAdjRed", week: "miniWeekNo" };
+var YEAR_KEYS = { title: "ypMonth", head: "ypHead", headRed: "ypHeadRed",
+                  day: "ypDay", dayRed: "ypDayRed",
+                  adj: "ypDayAdj", adjRed: "ypDayAdjRed", week: "ypWeekNo" };
+
+/* Размеры мини-календаря на странице месяца */
+function miniParams() {
+  var L = state.layout;
+  return {
+    titleH: pt2mm(L.miniTitleSize) * FRAME.miniTitle, titleGap: L.miniTitleGap,
+    headH : pt2mm(L.miniHeadSize) * FRAME.miniHead,   cellH: L.miniCellH,
+    wkW   : L.miniWeekNoW, wkGap: L.miniWeekNoGap,
+    withYear: true, fixedRows: 0, adjacent: state.style.miniAdjacent, ps: MINI_KEYS
+  };
+}
+
+/* P — размеры и ключи стилей (miniParams() или страница года).
+   P.wkW = 0 — без колонки номеров недель; P.fixedRows — английские буквы
+   дней ставятся под шестой строкой, чтобы ряды месяцев совпадали. */
+function miniScene(out, mn, P) {
+  if (!P) P = miniParams();
+  var CL = CAL[state.calLang], KS = P.ps;
   var x = mn.x, w = mn.w, year = mn.year, month = mn.month;
 
-  var wkW  = L.miniWeekNoW, gap = L.miniWeekNoGap;
+  var wkW  = P.wkW, gap = (wkW > 0) ? P.wkGap : 0;
   var gx   = x + wkW + gap;
   var colW = (w - wkW - gap) / 7;
   if (colW <= 0) return;                     // страховка; validate() это ловит
 
   var yy = mn.y, i, r, c, k, ry, dt, own, ps;
 
-  var title = CL.months[month] + SEP_SLASH + year + SEP_SLASH + EN.months[month];
-  var th = pt2mm(L.miniTitleSize) * FRAME.miniTitle;
-  out.push(txt([x, yy, x + w, yy + th], title, "miniTitle"));
-  yy += th + L.miniTitleGap;
+  var title = P.withYear
+            ? CL.months[month] + SEP_SLASH + year + SEP_SLASH + EN.months[month]
+            : CL.months[month] + SEP_SLASH + EN.months[month];
+  out.push(txt([x, yy, x + w, yy + P.titleH], title, KS.title));
+  yy += P.titleH + P.titleGap;
 
-  var hh = pt2mm(L.miniHeadSize) * FRAME.miniHead;
+  var hh = P.headH;
   for (i = 0; i < 7; i++)
     out.push(txt([gx + i * colW, yy, gx + (i + 1) * colW, yy + hh],
-                 CL.daysShort[i], i >= 5 ? "miniHeadRed" : "miniHead"));
+                 CL.daysShort[i], i >= 5 ? KS.headRed : KS.head));
   yy += hh;
 
   var rows = monthMatrix(year, month, false);
   var gridTop = yy;
 
   for (r = 0; r < rows.length; r++) {
-    ry = gridTop + r * L.miniCellH;
-    out.push(txt([x, ry, x + wkW, ry + L.miniCellH], String(rows[r].week), "miniWeekNo"));
+    ry = gridTop + r * P.cellH;
+    if (wkW > 0)
+      out.push(txt([x, ry, x + wkW, ry + P.cellH], String(rows[r].week), KS.week));
 
     for (c = 0; c < 7; c++) {
       dt  = rows[r].days[c];
       own = (dt.getUTCMonth() === month);
-      if (!own && !S.miniAdjacent) continue;
-      if (own) ps = (c >= 5) ? "miniDayRed" : "miniDay";
-      else     ps = (c >= 5) ? "miniDayAdjRed" : "miniDayAdj";
-      out.push(txt([gx + c * colW, ry, gx + (c + 1) * colW, ry + L.miniCellH],
+      if (!own && !P.adjacent) continue;
+      if (own) ps = (c >= 5) ? KS.dayRed : KS.day;
+      else     ps = (c >= 5) ? KS.adjRed : KS.adj;
+      out.push(txt([gx + c * colW, ry, gx + (c + 1) * colW, ry + P.cellH],
                    String(dt.getUTCDate()), ps));
     }
   }
-  var gridBottom = gridTop + rows.length * L.miniCellH;
+  var gridBottom = gridTop + rows.length * P.cellH;
 
-  vLine(out, x + wkW + gap / 2, gridTop, gridBottom, "miniRule");
+  if (wkW > 0) vLine(out, x + wkW + gap / 2, gridTop, gridBottom, "miniRule");
 
+  var enY = gridTop + Math.max(rows.length, P.fixedRows) * P.cellH;
   for (k = 0; k < 7; k++)
-    out.push(txt([gx + k * colW, gridBottom, gx + (k + 1) * colW, gridBottom + hh],
-                 EN.daysShort[k], k >= 5 ? "miniHeadRed" : "miniHead"));
+    out.push(txt([gx + k * colW, enY, gx + (k + 1) * colW, enY + hh],
+                 EN.daysShort[k], k >= 5 ? KS.headRed : KS.head));
+}
+
+/* Последняя страница: год крупно и двенадцать месяцев сеткой.
+   Оформление берётся из дизайна: цвет года, капитель названий, соседние
+   дни и плашки — как у мини-календарей, номера недель — если они есть. */
+function yearScene(year) {
+  var G = yearGeom(), S = state.style, out = [], i, c, r, x, y;
+
+  out.push(txt(G.titleB, String(year),
+               (S.titleMode === "centered") ? "ypTitleC" : "ypTitle", { vj: "B" }));
+
+  var P = { titleH: G.monthH, titleGap: G.monthGap, headH: G.headH, cellH: G.cellH,
+            wkW: G.wkW, wkGap: G.wkGap, withYear: false, fixedRows: 6,
+            adjacent: S.miniAdjacent, ps: YEAR_KEYS };
+
+  for (i = 0; i < 12; i++) {
+    c = i % G.cols; r = Math.floor(i / G.cols);
+    x = G.left + G.pad + c * (G.bw + G.gapX);
+    y = G.top  + G.pad + r * (G.bh + G.gapY);
+    if (S.miniPanel)
+      out.push({ k: "rect", b: [x - G.pad, y - G.pad, x + G.bw + G.pad, y + G.bh + G.pad],
+                 os: "miniPanel" });
+    miniScene(out, { x: x, y: y, w: G.bw, h: G.bh, year: year, month: i }, P);
+  }
+  return out;
 }
 
 /* photoY — низ фрейма под фото (общий для всех месяцев) или undefined */
@@ -2000,6 +2194,13 @@ function validate(precomputed) {
   if (w.overhang > 10) {
     res.warnings.push(fmt(U.warnOverhang, w.overhang.toFixed(1),
                           monthLabel(U, w.overMonth)));
+  }
+
+  // страница года сама подбирает кегли под лист; на маленьком листе с
+  // широкими полями числа могут выйти нечитаемыми
+  if (state.yearPage) {
+    var yg = yearGeom();
+    if (yg.dayPt < 6) res.warnings.push(fmt(U.warnYearSmall, yg.dayPt));
   }
 
   // шрифт с иероглифами — предупреждение, а не ошибка: документ построится
@@ -2164,8 +2365,38 @@ function looksCJK(fam) {
 function fontExists(fam, sty) {
   try {
     var f = app.fonts.itemByName(fam + "\t" + sty);
-    return f.isValid && f.status === FontStatus.INSTALLED;
+    if (!f.isValid || f.status !== FontStatus.INSTALLED) return false;
+    return !FONT_PROBE || FONT_PROBE(fam, sty);
   } catch (e) { return false; }
+}
+
+/* Установлен — ещё не значит пригоден. InDesign 2026 при назначении
+   молча подменяет некоторые семейства: встречено Myriad Pro → Acumin
+   Variable Concept, в котором нет кириллицы, и месяцы выходят квадратами.
+   Поэтому на время сборки шрифт-кандидат пробно назначается служебному
+   стилю: если InDesign вернул другое семейство, берётся следующий
+   кандидат. Без документа (в диалоге) проба не делается. */
+var FONT_PROBE = null;
+
+function makeFontProbe(doc) {
+  var cache = {}, st = null;
+  var probe = function (fam, sty) {
+    var key = fam + "\t" + sty;
+    if (cache[key] !== undefined) return cache[key];
+    var ok = false;
+    try {
+      if (!st) st = doc.paragraphStyles.add({ name: "CAL font probe" });
+      st.appliedFont = key;
+      // сравниваем с семейством, как его называет сам InDesign: имена
+      // CJK-семейств зависят от локали системы
+      ok = (String(st.appliedFont.fontFamily) ===
+            String(app.fonts.itemByName(key).fontFamily));
+    } catch (e) {}
+    cache[key] = ok;
+    return ok;
+  };
+  probe.done = function () { try { if (st) st.remove(); } catch (e) {} };
+  return probe;
 }
 
 /* Выбранный пользователем шрифт имеет приоритет: если нужного начертания
@@ -2457,13 +2688,21 @@ function beginRender(doc) {
         redChar: null, cjk: {} };
   R.specs  = paraSpecs();
   R.ospecs = objSpecs(computeMonth(state.year, 0));
-  R.fReg   = resolveFont("regular", "latin");
-  R.fBold  = resolveFont("bold",    "latin");
 
-  R.psGroup = doc.paragraphStyleGroups.itemByName("CAL");
-  if (!R.psGroup.isValid) R.psGroup = doc.paragraphStyleGroups.add({ name: "CAL" });
+  // шрифты подбираются с пробным назначением — см. makeFontProbe()
+  FONT_PROBE = makeFontProbe(doc);
+  try {
+    R.fReg  = resolveFont("regular", "latin");
+    R.fBold = resolveFont("bold",    "latin");
 
-  buildCjkStyles();
+    R.psGroup = doc.paragraphStyleGroups.itemByName("CAL");
+    if (!R.psGroup.isValid) R.psGroup = doc.paragraphStyleGroups.add({ name: "CAL" });
+
+    buildCjkStyles();
+  } finally {
+    FONT_PROBE.done();
+    FONT_PROBE = null;
+  }
 }
 
 /* Возвращает null или текст ошибки. Недостроенный документ закрывается,
@@ -2502,12 +2741,14 @@ function build(opts) {
       right: D.marginRight, bottom: D.marginBottom, columnCount: 1
     };
 
-    dp.pagesPerDocument = list.length;
+    dp.pagesPerDocument = pageCount();
 
     beginRender(doc);
     pY = state.options.photoFrame ? photoBottom() : undefined;
     for (k = 0; k < list.length; k++)
       renderScene(doc.pages[k], monthScene(list[k].year, list[k].month, pY));
+    if (state.yearPage)
+      renderScene(doc.pages[list.length], yearScene(yearPageYear()));
 
     if (!hidden) {
       try {
@@ -2704,7 +2945,7 @@ function previewItalic(bold) {
   return /italic|oblique|kursiv/i.test(s || "");
 }
 
-/* entry — { year, month } из monthRange() */
+/* entry — { year, month } из monthRange() или { yearPage: true, year } */
 function drawPreview(gfx, W, H, entry, zoom) {
   var cv = new PreviewCanvas(gfx), g = gfx;
   var D = state.doc;
@@ -2715,10 +2956,16 @@ function drawPreview(gfx, W, H, entry, zoom) {
   var pw = D.pageWidth, ph = D.pageHeight;
   if (!(pw > 0 && ph > 0)) return;
 
-  var pY    = state.options.photoFrame ? photoBottom() : undefined;
-  var items = monthScene(entry.year, entry.month, pY);
+  var items, osp, pY;
+  if (entry.yearPage) {
+    items = yearScene(entry.year);
+    osp   = objSpecs(computeMonth(state.year, 0));
+  } else {
+    pY    = state.options.photoFrame ? photoBottom() : undefined;
+    items = monthScene(entry.year, entry.month, pY);
+    osp   = objSpecs(computeMonth(entry.year, entry.month));
+  }
   var specs = paraSpecs();
-  var osp   = objSpecs(computeMonth(entry.year, entry.month));
   var i, it, vx1, vy1, vx2, vy2, b;
 
   // область просмотра: весь лист или блок календаря крупно
@@ -3100,6 +3347,13 @@ function showDialog() {
   var eYear   = gStart.add("edittext", undefined, "");
   eYear.preferredSize.width = 52;
   var eCount  = field(pD, U.fMonthCount, 52);
+  var gYP = pD.add("group");
+  gYP.orientation = "row"; gYP.spacing = 6;
+  var cbYearPage = gYP.add("checkbox", undefined, U.cbYearPage);
+  cbYearPage.helpTip = U.cbYearPageTip;
+  var eYPYear = gYP.add("edittext", undefined, "");
+  eYPYear.preferredSize.width = 52;
+  eYPYear.helpTip = U.cbYearPageTip;
   var ddFmt = dropdown(pD, U.fFormat, U.pagePresets, 160);
   var ePage = fieldPair(pD, U.fPageWH, "×");
   var eMar1 = fieldPair(pD, U.fMarTB, "/");
@@ -3185,7 +3439,7 @@ function showDialog() {
   gPrevTop.add("statictext", undefined, U.fPrevMonth);
   // пункты — месяцы диапазона, их заполняет fillPrevMonths()
   var ddPrevMonth = gPrevTop.add("dropdownlist", undefined, []);
-  ddPrevMonth.preferredSize.width = 130;
+  ddPrevMonth.preferredSize.width = 170;            // «2028 — год целиком»
   var rbPage  = gPrevTop.add("radiobutton", undefined, U.zoomPage);
   var rbBlock = gPrevTop.add("radiobutton", undefined, U.zoomBlock);
 
@@ -3209,6 +3463,7 @@ function showDialog() {
   /* ---------- заполнение / считывание ---------- */
 
   var filling = false;
+  var ypShown = "";        // год страницы года, каким его показали в поле
 
   function pickStyle(dd, want, current) {
     var a, b;
@@ -3247,6 +3502,7 @@ function showDialog() {
 
     eYear.text  = state.year;
     eCount.text = state.monthCount;
+    eYPYear.text = ypShown = String(yearPageYear());
     ePage[0].text = D.pageWidth;  ePage[1].text = D.pageHeight;
     eMar1[0].text = D.marginTop;  eMar1[1].text = D.marginBottom;
     eMar2[0].text = D.marginLeft; eMar2[1].text = D.marginRight;
@@ -3323,6 +3579,7 @@ function showDialog() {
     cbSix.value   = O.fixedSixRows;
     cbMini.value  = O.showMiniCalendars;
     cbPhoto.value = O.photoFrame;
+    cbYearPage.value = state.yearPage;
 
     sel = selectByText(ddFam, F.family);          // список уже наполнен
     ddFam.selection = sel;
@@ -3372,6 +3629,7 @@ function showDialog() {
     cbWkPad.enabled   = (S.weekNo !== "none");
     cbWkFill.enabled  = (S.weekNo !== "none");
     ddYear.enabled    = (S.titleMode !== "slash");
+    eYPYear.enabled   = cbYearPage.value;
 
     // тот же промежуток означает разное в разных компоновках
     eGapMM.labelText.text = isBelow ? U.fGapBelow : U.fGapSide;
@@ -3385,6 +3643,15 @@ function showDialog() {
     state.year       = Math.round(numOf(eYear,  state.year,       LIMITS.year));
     state.monthCount = Math.round(numOf(eCount, state.monthCount, LIMITS.months));
     if (ddStart.selection) state.startMonth = ddStart.selection.index;
+
+    // год страницы «год целиком»: пока поле не трогали, он следует за
+    // диапазоном; вписанный вручную запоминается, а совпавший с
+    // автоматическим снова становится автоматическим
+    state.yearPage = cbYearPage.value;
+    if (eYPYear.text !== ypShown) {
+      var yp = Math.round(numOf(eYPYear, yearPageYear(), LIMITS.year));
+      state.yearPageYear = (yp === autoYearPageYear()) ? 0 : yp;
+    }
 
     D.pageWidth    = numOf(ePage[0], D.pageWidth,    LIMITS.pageSide);
     D.pageHeight   = numOf(ePage[1], D.pageHeight,   LIMITS.pageSide);
@@ -3485,27 +3752,32 @@ function showDialog() {
     redrawPreview();
   }
 
-  /* Список месяцев над схемой = месяцы диапазона. Перестраивается только
-     при смене диапазона; выбранный месяц сохраняется, если он остался в
-     диапазоне, иначе берётся самый высокий — худший случай по высоте. */
+  /* Список над схемой = месяцы диапазона и, если включена, страница года.
+     Перестраивается только при смене диапазона; выбранный пункт
+     сохраняется, если он остался в списке, иначе берётся самый высокий
+     месяц — худший случай по высоте. */
   var prevList = [], prevKey = "";
 
   function fillPrevMonths() {
-    var key = state.year + "/" + state.startMonth + "/" + state.monthCount;
+    var ypY = state.yearPage ? yearPageYear() : 0;
+    var key = state.year + "/" + state.startMonth + "/" + state.monthCount + "/" + ypY;
     if (key === prevKey) return;
 
     var old = (ddPrevMonth.selection) ? prevList[ddPrevMonth.selection.index] : null;
-    var i, sel = -1;
+    var i, e, sel = -1, months = monthRange();
     prevKey  = key;
-    prevList = monthRange();
+    prevList = months.slice(0);
+    if (state.yearPage) prevList.push({ yearPage: true, year: ypY });
 
     ddPrevMonth.removeAll();
     for (i = 0; i < prevList.length; i++) {
-      ddPrevMonth.add("item", monthLabel(U, prevList[i]));
-      if (old && sel < 0 && prevList[i].year === old.year &&
-          prevList[i].month === old.month) sel = i;
+      e = prevList[i];
+      ddPrevMonth.add("item", e.yearPage ? fmt(U.prevYearPage, e.year) : monthLabel(U, e));
+      if (!old || sel >= 0) continue;
+      if (e.yearPage) { if (old.yearPage) sel = i; }
+      else if (!old.yearPage && e.year === old.year && e.month === old.month) sel = i;
     }
-    ddPrevMonth.selection = (sel >= 0) ? sel : tallestMonth(prevList);
+    ddPrevMonth.selection = (sel >= 0) ? sel : tallestMonth(months);
   }
 
   function applyAutofit() {
@@ -3620,6 +3892,7 @@ function showDialog() {
         state.font   = keep.font;      state.colors = keep.colors;
         state.year   = keep.year;      state.view   = keep.view;
         state.startMonth = keep.startMonth; state.monthCount = keep.monthCount;
+        state.yearPage = keep.yearPage; state.yearPageYear = keep.yearPageYear;
         state.uiLang = keep.uiLang;    state.calLang = keep.calLang;
         state.options.miniSide   = keep.options.miniSide;
         state.options.photoFrame = keep.options.photoFrame;
@@ -3682,10 +3955,11 @@ function showDialog() {
   ddAnc.onChange   = refresh;
   ddStart.onChange = refresh;
   cbMini.onClick   = refresh;
+  cbYearPage.onClick = refresh;
   bAuto.onClick  = applyAutofit;
 
   var live = [ePage[0], ePage[1], eMar1[0], eMar1[1], eMar2[0], eMar2[1],
-              eYear, eCount, eRatio, eTop, eGapMM,
+              eYear, eCount, eYPYear, eRatio, eTop, eGapMM,
               eTitle, eDay, eCellH, eHeadLc, eHeadEn, eWeekNo,
               eMTitle, eMDay, eMCellH, eMHead, eMGap, eMW,
               eRed[0], eRed[1], eRed[2], eRed[3],
@@ -3702,6 +3976,7 @@ function showDialog() {
     state.year   = keep.year;      state.view   = keep.view;      // не часть
     state.uiLang = keep.uiLang;    state.calLang = keep.calLang;  // компоновки
     state.startMonth = keep.startMonth; state.monthCount = keep.monthCount;
+    state.yearPage = keep.yearPage; state.yearPageYear = keep.yearPageYear;
     state.options.miniSide   = keep.options.miniSide;
     state.options.photoFrame = keep.options.photoFrame;
     if (keep.doc.pageWidth !== BASE.pageW || keep.doc.pageHeight !== BASE.pageH)
@@ -3749,6 +4024,7 @@ function showDialog() {
       $.global.CGB_HARNESS.onDialog(win, {
         tabs: tabs, tabList: [tD, tL, tF, tC], design: ddDesign, month: ddPrevMonth,
         start: ddStart, year: eYear, count: eCount,
+        yearPage: cbYearPage, ypYear: eYPYear,
         rbPage: rbPage, rbBlock: rbBlock, applyDesign: applyDesign,
         redraw: redrawPreview
       });
@@ -3782,6 +4058,9 @@ if ($.global.CGB_HARNESS) {
     computeMonth: computeMonth,
     monthRange  : monthRange,
     worstBottom : worstBottom,
+    yearScene   : yearScene,
+    yearGeom    : yearGeom,
+    yearPageYear: yearPageYear,
     periodText  : periodText,
     periodShort : periodShort,
     ui          : UI,
@@ -3812,7 +4091,8 @@ if (answer === "ok") {
     alert(U.buildFailHead + NL + NL + buildError, U.buildFailTitle);
   } else {
     alert(fmt(U.doneBody, periodText(U), state.doc.pageWidth, state.doc.pageHeight,
-              U.designs[state.design], U.tpl[state.template], state.monthCount) +
+              U.designs[state.design], U.tpl[state.template], pageCount(),
+              state.yearPage ? fmt(U.doneYearPage, yearPageYear()) : "") +
           (state.calLang === "zh" ? U.doneCjkNote : ""));
   }
 }
